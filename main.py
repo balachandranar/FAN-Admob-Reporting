@@ -1,7 +1,6 @@
 import FAN_Abs
 import TimeUtils
 import GraphUtils
-import matplotlib.dates as mdates
 import time
 import sys
 
@@ -17,10 +16,10 @@ if len(sys.argv) == 3:
         y_values = []
         x_timeArray = []
         for datum in data:
-            x_timeArray.append(mdates.date2num(TimeUtils.fb_report_date_to_datetime(datum['time'])))
+            x_timeArray.append(TimeUtils.fb_report_date_to_datetime(datum['time']))
             y_values.append(float(datum['value']))
 
-        GraphUtils.plot_time_series(x_timeArray, y_values, "Revenue")
+        GraphUtils.plot_time_series(x_timeArray, y_values, "Revenue","$")
     else:
         print("Bad Response. Code :" + str(fan_res.status_code))
 
