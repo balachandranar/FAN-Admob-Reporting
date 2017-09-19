@@ -1,11 +1,11 @@
 import time
 import dateutil.parser
 
-OUR_DATE_FORMAT = '%d-%m-%Y'
+OUR_DATE_FORMAT = '%Y-%m-%d'
 
 
 def epoch_to_date(epoch_secs):
-    return time.strftime(OUR_DATE_FORMAT, time.localtime(epoch_secs))
+    return time.strftime(OUR_DATE_FORMAT, time.gmtime(epoch_secs))
 
 
 def date_to_epoch(date_string):
