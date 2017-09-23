@@ -1,7 +1,6 @@
+import csv
 import sys
 import tkinter
-
-import time
 
 import FANHelper
 import GoogleApiHelper
@@ -11,6 +10,14 @@ from TKinterDatePicker import Datepicker
 
 
 def get_and_plot_ads_revenue_data(fan_app_id, fan_access_token, from_time, to_time):
+    revenue_data = get_fan_and_admob_revenue_data(fan_app_id, fan_access_token, from_time, to_time)
+
+    # we got all the necessary data. We will plot the data into a time series graph now.
+    GraphUtils.plot_time_series(revenue_data[0], revenue_data[1:4], "Date", "Revenue", ["FAN", "Admob", "Total"], "$",
+                                "Network", "Pi Music Player Ads Revenue")
+
+
+def get_fan_and_admob_revenue_data(fan_app_id, fan_access_token, from_time, to_time):
     # Getting the FAN revenue data
     fan_res = FANHelper.fan_api_request(fan_app_id, fan_access_token, from_time, to_time)
 
@@ -35,24 +42,46 @@ def get_and_plot_ads_revenue_data(fan_app_id, fan_access_token, from_time, to_ti
         for i, _ in enumerate(x_time_array):
             total_y_values.append(fan_y_values[i] + admob_values[i])
 
-        y_values = [fan_y_values, admob_values, total_y_values]
+        return [x_time_array, fan_y_values, admob_values, total_y_values]
 
-        # we got all the necessary data. We will plot the data into a time series graph now.
-        GraphUtils.plot_time_series(x_time_array, y_values, "Date", "Revenue", ["FAN", "Admob", "Total"], "$",
-                                    "Network", "Pi Music Player Ads Revenue")
     else:
         print("Bad Response. Code :" + str(fan_res.status_code))
 
 
-def get_data_button_click(root_window, start_picker, end_picker):
+def get_ads_revenue_data_and_show_table(fan_app_id, fan_access_token, from_time, to_time):
+    revenue_data = get_fan_and_admob_revenue_data(fan_app_id, fan_access_token, from_time, to_time)
+    to_csv_data = [["DATE", "FAN", "ADMOB", "TOTAL"]]
+    fan_sum = 0;
+    admob_sum = 0;
+    total_sum = 0;
+    for i, _ in enumerate(revenue_data[0]):
+        to_csv_data.append(
+            [TimeUtils.datetime_to_date_string(revenue_data[0][i]), round(revenue_data[1][i], 2), round(revenue_data[2][i], 2),
+             round(revenue_data[3][i], 2)])
+        fan_sum += revenue_data[1][i]
+        admob_sum += revenue_data[2][i]
+        total_sum += revenue_data[3][i]
+    to_csv_data.append(["SUM", round(fan_sum,2), round(admob_sum,2), round(total_sum,2)])
+    with open('rev_from_'+TimeUtils.epoch_to_date(from_time)+'_to_'+TimeUtils.epoch_to_date(to_time)+'.csv', 'w', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerows(to_csv_data)
+        f.close()
+
+
+def show_graph_button_click(start_picker, end_picker):
     # get_and_plot_ads_revenue_data(fan_app_id, fan_access_token, 1496477331, int(time.time()))
     if start_picker.current_date is not None and end_picker.current_date is not None:
         start_epoch = TimeUtils.date_string_to_epoch_int(start_picker.current_text)
-        print("Start Date is", start_epoch)
         end_epoch = TimeUtils.date_string_to_epoch_int(end_picker.current_text)
-        print("End Date is", end_epoch)
         get_and_plot_ads_revenue_data(fan_app_id, fan_access_token, start_epoch, end_epoch)
-        root_window.destroy()
+
+
+def show_table_button_click(start_picker, end_picker):
+    # get_and_plot_ads_revenue_data(fan_app_id, fan_access_token, 1496477331, int(time.time()))
+    if start_picker.current_date is not None and end_picker.current_date is not None:
+        start_epoch = TimeUtils.date_string_to_epoch_int(start_picker.current_text)
+        end_epoch = TimeUtils.date_string_to_epoch_int(end_picker.current_text)
+        get_ads_revenue_data_and_show_table(fan_app_id, fan_access_token, start_epoch, end_epoch)
 
 
 def close_button_click(root_window):
@@ -67,7 +96,7 @@ if len(sys.argv) == 3:
 
     root = tkinter.Tk()
 
-    root.geometry("600x300")
+    root.geometry("600x350")
 
     main = tkinter.Frame(root, pady=15, padx=15)
     main.place(anchor="c", relx=.5, rely=.2)
@@ -80,11 +109,16 @@ if len(sys.argv) == 3:
     end_date_picker = Datepicker(main)
     end_date_picker.grid(row=1, column=1, pady=(5, 5))
 
-    tkinter.Button(main, text="GET DATA",
-                   command=lambda: get_data_button_click(root, start_date_picker, end_date_picker)).grid(row=2,
-                                                                                                         column=0,
-                                                                                                         pady=(5, 5))
-    tkinter.Button(main, text="CLOSE", command=lambda: close_button_click(root)).grid(row=2, column=1, pady=(5, 5))
+    tkinter.Button(main, text="SHOW GRAPH",
+                   command=lambda: show_graph_button_click(start_date_picker, end_date_picker)).grid(row=2,
+                                                                                                     column=0,
+                                                                                                     pady=(5, 5))
+
+    tkinter.Button(main, text="TABLE",
+                   command=lambda: show_table_button_click(start_date_picker, end_date_picker)).grid(row=2,
+                                                                                                     column=1,
+                                                                                                     pady=(5, 5))
+    tkinter.Button(main, text="CLOSE", command=lambda: close_button_click(root)).grid(row=3, column=1, pady=(5, 5))
 
     root.mainloop()
 

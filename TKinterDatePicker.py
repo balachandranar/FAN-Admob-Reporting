@@ -16,7 +16,6 @@ These are the default bindings:
     CTRL + SHIFT + PAGE DOWN: Move to the next year.
     CTRL + LEFT: Move to the previous day.
     CTRL + RIGHT: Move to the next day.
-    CTRL + UP: Move to the previous week.
     CTRL + DOWN: Move to the next week.
     CTRL + END: Close the datepicker and erase the date.
     CTRL + HOME: Move to the current month.
