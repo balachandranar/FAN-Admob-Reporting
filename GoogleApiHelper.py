@@ -1,7 +1,5 @@
-import time
 from apiclient import sample_tools
 from oauth2client import client
-import TimeUtils
 
 MAX_PAGE_SIZE = 50
 DATE_FORMAT = '%Y-%m-%d'
@@ -24,7 +22,6 @@ def get_account_id(service):
     Returns:
       The selected account id.
     """
-    account_id = None
     accounts = service.accounts().list().execute()
     if len(accounts['items']) == 1:
         account_id = accounts['items'][0]['id']

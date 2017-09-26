@@ -9,17 +9,17 @@ import TimeUtils
 from TKinterDatePicker import Datepicker
 
 
-def get_and_plot_ads_revenue_data(fan_app_id, fan_access_token, from_time, to_time):
-    revenue_data = get_fan_and_admob_revenue_data(fan_app_id, fan_access_token, from_time, to_time)
+def get_and_plot_ads_revenue_data(fan_id, fan_token, from_time, to_time):
+    revenue_data = get_fan_and_admob_revenue_data(fan_id, fan_token, from_time, to_time)
 
     # we got all the necessary data. We will plot the data into a time series graph now.
     GraphUtils.plot_time_series(revenue_data[0], revenue_data[1:4], "Date", "Revenue", ["FAN", "Admob", "Total"], "$",
                                 "Network", "Pi Music Player Ads Revenue")
 
 
-def get_fan_and_admob_revenue_data(fan_app_id, fan_access_token, from_time, to_time):
+def get_fan_and_admob_revenue_data(fan_id, fan_token, from_time, to_time):
     # Getting the FAN revenue data
-    fan_res = FANHelper.fan_api_request(fan_app_id, fan_access_token, from_time, to_time)
+    fan_res = FANHelper.fan_api_request(fan_id, fan_token, from_time, to_time)
 
     if fan_res.status_code == 200:
         data = fan_res.json()['data']
@@ -48,12 +48,12 @@ def get_fan_and_admob_revenue_data(fan_app_id, fan_access_token, from_time, to_t
         print("Bad Response. Code :" + str(fan_res.status_code))
 
 
-def get_ads_revenue_data_and_show_table(fan_app_id, fan_access_token, from_time, to_time):
-    revenue_data = get_fan_and_admob_revenue_data(fan_app_id, fan_access_token, from_time, to_time)
+def get_ads_revenue_data_and_show_table(fan_id, fan_token, from_time, to_time):
+    revenue_data = get_fan_and_admob_revenue_data(fan_id, fan_token, from_time, to_time)
     to_csv_data = [["DATE", "FAN", "ADMOB", "TOTAL"]]
-    fan_sum = 0;
-    admob_sum = 0;
-    total_sum = 0;
+    fan_sum = 0
+    admob_sum = 0
+    total_sum = 0
     for i, _ in enumerate(revenue_data[0]):
         to_csv_data.append(
             [TimeUtils.datetime_to_date_string(revenue_data[0][i]), round(revenue_data[1][i], 2), round(revenue_data[2][i], 2),
